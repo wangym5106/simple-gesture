@@ -119,9 +119,10 @@ class GestureProcessor(object):
 
         lower_skin = np.array([100, 50, 0])
         upper_skin = np.array([125, 255, 255])
-        blurred = cv2.medianBlur(hsv, 31)
-        skinMask = cv2.inRange(blurred, lower_skin, upper_skin)
-        self.thresholded = skinMask
+
+        skinMask = cv2.inRange(hsv, lower_skin, upper_skin)
+        denoise = cv2.fastNlMeansDenoising(skinMask,None,10,3,3)
+        self.thresholded = denoise
 
     def extractContours(self):
         _, self.contours, _ = cv2.findContours(self.thresholded.copy(),
@@ -242,7 +243,7 @@ class GestureProcessor(object):
             yPoints = [pt[1] for pt in self.handMomentPositions[val:-1]]
             xAvg = np.average(xPoints)
             yAvg = np.average(yPoints)
-            factor = 0.04
+            factor = 0.1
             for x, y in self.handMomentPositions[-(searchLength + 1):-1]:
                 # if any point is further further from the average:
                 if (x-xAvg)**2 + (y-yAvg)**2 > factor * min(self.cameraWidth,
@@ -278,7 +279,7 @@ class GestureProcessor(object):
         distanceDiffRatio = assessments[index][Gesture.totalDistance] /\
                                 min(self.gestures[index].distance,
                                     self.humanGesture.distance)
-        if templateGestureRatio < 1.25 and distanceDiffRatio < 2:
+        if templateGestureRatio < 2 and distanceDiffRatio < 2:
             return index
 
     def determineIfGesture(self):
@@ -290,6 +291,7 @@ class GestureProcessor(object):
                 gestureIndex = self.classifyGesture()
                 if gestureIndex != None:
                     self.gestures[gestureIndex].action()
+                    self.handCenterPositions = []
                     self.lastAction = self.gestures[gestureIndex].name
                 elif gestureIndex == None and self.saveNextGesture:
                     self.addRecordedGesture()

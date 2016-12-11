@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+import MouseApi
 
 class Gesture(object):
     __GestureMaxDim = 1024.0 # Nice round number

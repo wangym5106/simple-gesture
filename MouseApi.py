@@ -7,7 +7,9 @@ def go_forward():
     windll.user32.mouse_event(0x0180, 0, 0, 0x2, 0)
 
 def scroll_up(pixel):
+    print 'up'
     windll.user32.mouse_event(0x0800, 0, 0, pixel, 0)
 
 def scroll_down(pixel):
+    print 'down'
     windll.user32.mouse_event(0x0800, 0, 0, -pixel, 0)
